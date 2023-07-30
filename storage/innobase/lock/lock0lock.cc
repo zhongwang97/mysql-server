@@ -59,6 +59,7 @@ this program; if not, write to the Free Software Foundation, Inc.,
 #include "usr0sess.h"
 #include "ut0new.h"
 #include "ut0vec.h"
+#include "ut0log.h"
 
 #include "my_dbug.h"
 #include "my_psi_config.h"
@@ -1949,6 +1950,41 @@ static dberr_t lock_rec_lock(bool impl, select_mode sel_mode, ulint mode,
   /* Implicit locks are equivalent to LOCK_X|LOCK_REC_NOT_GAP, so we can omit
   creation of explicit lock only if the requested mode was LOCK_REC_NOT_GAP */
   ut_ad(!impl || ((mode & LOCK_REC_NOT_GAP) == LOCK_REC_NOT_GAP));
+
+  std::string lock_mode, lock_scope;
+	switch (LOCK_MODE_MASK & mode) {
+	case LOCK_S:
+		lock_mode = "LOCK_MODE: S";
+		break;
+	case LOCK_X:
+		lock_mode = "LOCK_MODE: X";
+		break;
+	default:
+		lock_mode = "LOCK_MODE: UNKNOWN";
+	}
+
+	switch (mode - (LOCK_MODE_MASK & mode)) {
+	case LOCK_GAP:
+		lock_scope = "LOCK_SCOPE: Gap Lock";
+		break;
+	case LOCK_REC_NOT_GAP:
+		lock_scope = "LOCK_SCOPE: Record Lock";
+		break;
+	case LOCK_ORDINARY:
+		lock_scope = "LOCK_SCOPE: Next-Key Lock";
+		break;
+	default:
+		lock_scope = "LOCK_SCOPE: UNKNOWN";
+	}
+
+	if (std::string(index->table_name).find("lock_demo/") == 0) {
+		ib::info() << "TABLE: " << index->table_name << " || "
+	 		<< "INDEX: " << index->name << " || " 
+			<< "impl: " << impl << " || "
+	 		<< lock_mode << " || " 
+	 		<< lock_scope;
+	}
+
   /* We try a simplified and faster subroutine for the most
   common cases */
   switch (lock_rec_lock_fast(impl, mode, block, heap_no, index, thr)) {
