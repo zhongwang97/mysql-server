@@ -17,7 +17,7 @@ source_downloads
 [._]sw[a-p]
 
 # Configuration files for Visual Studio Code
-.vscode/
+#.vscode/
 
 build/
 datatool/
@@ -31,3 +31,6 @@ scalability_jobs_*
 .cproject
 .project
 .settings/
+
+debug/build/
+deps/

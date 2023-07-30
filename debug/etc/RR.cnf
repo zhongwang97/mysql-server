@@ -1,0 +1,6 @@
+[mysqld]
+general_log = 1
+log-error-verbosity = 3
+innodb_file_per_table=1
+port=3307
+transaction_isolation = REPEATABLE-READ
