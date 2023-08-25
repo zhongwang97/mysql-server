@@ -511,6 +511,7 @@ static inline Conflict rec_lock_check_conflict(const trx_t *trx,
   /* We have somewhat complex rules when gap type record locks
   cause waits */
 
+  // type_mode 是非插入意向的GAP锁，什么都不用等待
   if ((lock_is_on_supremum || (type_mode & LOCK_GAP)) &&
       !(type_mode & LOCK_INSERT_INTENTION)) {
     /* Gap type locks without LOCK_INSERT_INTENTION flag
@@ -521,6 +522,7 @@ static inline Conflict rec_lock_check_conflict(const trx_t *trx,
     return Conflict::NO_CONFLICT;
   }
 
+  // type_mode 不是插入意向锁，当前锁是GAP锁，不冲突
   if (!(type_mode & LOCK_INSERT_INTENTION) && lock_rec_get_gap(lock2)) {
     /* Record lock (LOCK_ORDINARY or LOCK_REC_NOT_GAP
     does not need to wait for a gap type lock */
@@ -528,6 +530,7 @@ static inline Conflict rec_lock_check_conflict(const trx_t *trx,
     return Conflict::NO_CONFLICT;
   }
 
+  // type_mode 是GAP锁（可能是插入意向锁）但是当前锁是 REC_NOT_GAP 锁，不冲突
   if ((type_mode & LOCK_GAP) && lock_rec_get_rec_not_gap(lock2)) {
     /* Lock on gap does not need to wait for
     a LOCK_REC_NOT_GAP type lock */
@@ -535,6 +538,7 @@ static inline Conflict rec_lock_check_conflict(const trx_t *trx,
     return Conflict::NO_CONFLICT;
   }
 
+  // 当前锁是插入意向锁，不需要检查 type_mode， 都不冲突
   if (lock_rec_get_insert_intention(lock2)) {
     /* No lock request needs to wait for an insert
     intention lock to be removed. This is ok since our
@@ -1616,6 +1620,12 @@ static void lock_rec_add_to_queue(ulint type_mode, const buf_block_t *block,
   }
 #endif /* UNIV_DEBUG */
 
+  if(std::string(index->table_name).find("lock_demo/") == 0) {
+    ib::info() << "lock_rec_add_to_queue" << " || "
+      << "TABLE: " << index->table_name << " || "
+	 		<< "INDEX: " << index->name << " || ";
+  }
+
   type_mode |= LOCK_REC;
 
   /* If rec is the supremum record, then we can reset the gap bit, as
@@ -1978,7 +1988,8 @@ static dberr_t lock_rec_lock(bool impl, select_mode sel_mode, ulint mode,
 	}
 
 	if (std::string(index->table_name).find("lock_demo/") == 0) {
-		ib::info() << "TABLE: " << index->table_name << " || "
+		ib::info() << "lock_rec_lock" << " || "
+      << "TABLE: " << index->table_name << " || "
 	 		<< "INDEX: " << index->name << " || " 
 			<< "impl: " << impl << " || "
 	 		<< lock_mode << " || " 
@@ -5398,6 +5409,13 @@ dberr_t lock_rec_insert_check_and_lock(
 
   ut_ad(!index->table->is_temporary());
 
+  if(std::string(index->table_name).find("lock_demo/") == 0) {
+    ib::info() << "lock_rec_insert_check_and_lock" << " || "
+      << "TABLE: " << index->table_name << " || "
+	 		<< "INDEX: " << index->name << " || ";
+  }
+
+
   dberr_t err = DB_SUCCESS;
   lock_t *lock;
   auto inherit_in = *inherit;
@@ -5493,6 +5511,12 @@ static void lock_rec_convert_impl_to_expl_for_trx(
     ulint heap_no)            /*!< in: rec heap number to lock */
 {
   ut_ad(trx_is_referenced(trx));
+
+  if(std::string(index->table_name).find("lock_demo/") == 0) {
+      ib::info() << "call lock_rec_convert_impl_to_expl_for_trx" << " || "
+        << "TABLE: " << index->table_name << " || "
+	 		  << "INDEX: " << index->name << " || ";
+    }
 
   DEBUG_SYNC_C("before_lock_rec_convert_impl_to_expl_for_trx");
   {

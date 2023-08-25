@@ -10,7 +10,7 @@
             "name": "Debug mysqld",
             "program": "${workspaceFolder}/debug/build/bin/mysqld",
             "args": [
-                "--defaults-file=${workspaceFolder}/debug/etc/RR.cnf", "--general-log=ON"
+                "--defaults-file=${workspaceFolder}/debug/etc/RR.cnf", "--debug=d:t:i:L:F:O,/tmp/mysqld.trace"
             ],
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "build mysqld debug"

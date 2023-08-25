@@ -163,6 +163,10 @@ class ReadView {
                                      const table_name_t &name) const {
     ut_ad(id > 0);
 
+    if(std::string(name.m_name).find("lock_demo/") == 0) {
+      ib::info() << "changes_visible";
+    }
+
     if (id < m_up_limit_id || id == m_creator_trx_id) {
       return (true);
     }

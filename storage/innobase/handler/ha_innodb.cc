@@ -8284,6 +8284,11 @@ static mysql_row_templ_t *build_template_field(
   templ->is_unsigned = col->prtype & DATA_UNSIGNED;
 
   if (!index->is_clustered() && templ->rec_field_no == ULINT_UNDEFINED) {
+    if(std::string(index->table_name).find("lock_demo/") == 0) {
+      ib::info() << "set need_to_access_clustered=true" << " || "
+        << "TABLE: " << index->table_name << " || "
+	 		  << "INDEX: " << index->name << " || ";
+    }
     prebuilt->need_to_access_clustered = true;
   }
 
@@ -8390,6 +8395,12 @@ void ha_innobase::build_template(bool whole_row) {
   index = whole_row ? clust_index : m_prebuilt->index;
 
   m_prebuilt->need_to_access_clustered = (index == clust_index);
+
+  if(std::string(index->table_name).find("lock_demo/") == 0) {
+    ib::info() << "set need_to_access_clustered:" << m_prebuilt->need_to_access_clustered << " || "
+      << "TABLE: " << index->table_name << " || "
+	 		<< "INDEX: " << index->name << " || ";
+  }
 
   /* Either m_prebuilt->index should be a secondary index, or it
   should be the clustered index. */
