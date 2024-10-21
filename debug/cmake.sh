@@ -1,4 +1,6 @@
 #!/bin/bash
+
+# sudo apt install bison libudev-dev
 export DEP=$(realpath ../deps) && cmake .. \
     -B ./build \
     -DWITH_DEBUG=1 \
